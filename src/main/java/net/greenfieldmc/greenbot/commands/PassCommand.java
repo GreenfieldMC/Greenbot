@@ -9,6 +9,8 @@ import discord4j.core.object.entity.Guild;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import discord4j.rest.util.Permission;
+import discord4j.rest.util.PermissionSet;
 import net.greenfieldmc.greenbot.Config;
 import net.greenfieldmc.greenbot.FailureConfig;
 import net.greenfieldmc.greenbot.Util;
@@ -44,7 +46,6 @@ public class PassCommand extends AbstractCommand {
 
         var passedUser = options.getOption("discord_user").flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asUser).orElse(null);
         if (passedUser == null) return event.reply().withEmbeds(Util.errorEmbed("Unable to find the user specified."));
-
 
         var user = passedUser.block();
         if (user == null) return event.reply().withEmbeds(Util.errorEmbed("Unable to find the user specified."));

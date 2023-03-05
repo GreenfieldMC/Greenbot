@@ -7,6 +7,7 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.object.entity.User;
+import net.greenfieldmc.greenbot.commands.CodesCommand;
 import net.greenfieldmc.greenbot.commands.FailCommand;
 import net.greenfieldmc.greenbot.commands.PassCommand;
 import net.greenfieldmc.greenbot.commands.SlashCommand;
@@ -16,23 +17,31 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Greenbot {
 
+    private List<SlashCommand> commands;
+    private FailureConfig failures;
+    private Config config;
+    private CodesConfig codes;
+    private Plugin plugin;
+
     public Greenbot(Plugin plugin) throws IOException {
-        var config = new Config(plugin);
-        var failures = new FailureConfig(plugin);
+        this.plugin = plugin;
+        this.config = new Config(plugin);
+        this.codes = new CodesConfig(plugin, config);
+        this.commands = new ArrayList<>();
+        this.failures = new FailureConfig(plugin);
 
         GatewayDiscordClient client = DiscordClientBuilder.create(config.getBotToken()).build().login().block();
 
         if (client == null) throw new RuntimeException("Discord gateway client was null, bot will not run.");
 
         var restClient = client.getRestClient();
-        var commands = new ArrayList<SlashCommand>() {{
-            add(new PassCommand(plugin, config, failures));
-            add(new FailCommand(plugin, config, failures));
-        }};
+
+        initCommands();
 
         client.on(ReadyEvent.class, event ->
             Mono.fromRunnable(() -> {
@@ -65,13 +74,38 @@ public class Greenbot {
             Flux.fromIterable(commands)
                     .filter(cmd -> cmd.getName().equalsIgnoreCase(event.getCommandName()))
                     .next()
-                    .flatMap(cmd -> cmd.handle(event))
-        ).then(client.onDisconnect()).subscribe();
+                    .flatMap(cmd -> {
+                        var member = event.getInteraction().getMember();
+                        var name = "UNKNOWN";
+                        if (member.isPresent()) name = member.get().getDisplayName() + "#" + member.get().getDiscriminator();
+                        var command = cmd.getName();
+                        plugin.getLogger().info("[Discord] " + name + " invoked " + command);
+                        return cmd.handle(event);
+                    })
+        ).doOnError(e -> plugin.getLogger().severe(e.getMessage())).then(client.onDisconnect()).subscribe();
 
         failures.getFailures().forEach((uid, failure) -> {
             if (failure.creationTime() + (1000L * 60 * 60 * 24 * config.getAutoDeleteFailureChannelDays()) > System.currentTimeMillis()) {
                 failures.removeFailureChannel(uid);
             }
         });
+    }
+
+    private void initCommands() {
+        this.commands = new ArrayList<>() {{
+            add(new PassCommand(plugin, config, failures));
+            add(new FailCommand(plugin, config, failures));
+            add(new CodesCommand(plugin, config, codes));
+        }};
+    }
+
+    void reload() {
+        try {
+            this.config = new Config(plugin);
+            this.codes = new CodesConfig(plugin, config);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        initCommands();
     }
 }

@@ -1,5 +1,6 @@
 package net.greenfieldmc.greenbot;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
@@ -17,36 +18,34 @@ public class Config {
 
     private final long failureMessagesCategory;
     private final List<Long> failureMessageCategoryAllowedRanks;
+    private final List<Long> allowCodesOtherRanks;
     private final int autoDeleteFailureDays;
+    private final YamlConfiguration conf;
+    private final File codesFile;
+    private final String codeListKey;
 
     public Config(Plugin plugin) throws IOException {
         plugin.getDataFolder().mkdirs();
         File file = new File(plugin.getDataFolder() + File.separator + "config.yml");
         if (file.exists()) {
-            var conf = YamlConfiguration.loadConfiguration(file);
-            if (conf.get("botToken") == null ||
-                    conf.get("guildId") == null ||
-                    conf.get("testingChannelId") == null ||
-                    conf.get("testingRankId") == null ||
-                    conf.get("hasBeenAddedToServer") == null ||
-                    conf.get("failureMessagesCategory") == null ||
-                    conf.get("failureMessageCategoryAllowedRanks") == null ||
-                    conf.get("autoDeleteFailureDays") == null) {
-                throw new RuntimeException("Configuration file does not have all necessary keys to load. Please delete the configuration and let the program regenerate it.");
-            }
-            else {
-                this.hasBeenAddedToServer = conf.getBoolean("hasBeenAddedToServer");
-                conf.set("hasBeenAddedToServer", true);
-                this.botToken = conf.getString("botToken");
-                this.guildId = conf.getLong("guildId");
-                this.testingChannelId = conf.getLong("testingChannelId");
-                this.testingRankId = conf.getLong("testingRankId");
-                this.failureMessagesCategory = conf.getLong("failureMessagesCategory");
-                this.failureMessageCategoryAllowedRanks = conf.getLongList("failureMessageCategoryAllowedRanks");
-                this.autoDeleteFailureDays = conf.getInt("autoDeleteFailureDays");
-                conf.save(file);
-            }
+            this.conf = YamlConfiguration.loadConfiguration(file);
 
+            this.hasBeenAddedToServer = getOrThrow(Boolean.class, "hasBeenAddedToServer");
+            conf.set("hasBeenAddedToServer", true);
+            this.botToken = getOrThrow(String.class, "botToken");
+
+            this.guildId = getOrThrow(Long.class, "guildId");
+            this.testingChannelId = getOrThrow(Long.class, "testingChannelId");
+            this.testingRankId = getOrThrow(Long.class, "testingRankId");
+            this.failureMessagesCategory = getOrThrow(Long.class, "failureMessagesCategory");
+            this.failureMessageCategoryAllowedRanks = getOrThrow(List.class, "failureMessageCategoryAllowedRanks");
+            this.autoDeleteFailureDays = getOrThrow(Integer.class,"autoDeleteFailureDays");
+
+            this.codesFile = new File(plugin.getDataFolder().getParentFile() + getOrThrow(String.class, "codes.codesYmlFile"));
+            this.codeListKey = getOrThrow(String.class, "codes.codeListKey");
+            this.allowCodesOtherRanks = getOrThrow(List.class, "codes.allowCodesOtherRanks");
+
+            conf.save(file);
         } else {
             plugin.getLogger().warning("No configuration file found for the bot. Creating a default configuration.");
             if (!file.createNewFile()) {
@@ -61,11 +60,19 @@ public class Config {
             conf.set("failureMessagesCategory", "put the category ID here");
             conf.set("failureMessageCategoryAllowedRanks", List.of(-1L, -2L));
             conf.set("autoDeleteFailureDays", 14);
+            conf.set("codes.codeYmlFile", "plugins/GreenfieldCore/codes.yml");
+            conf.set("codes.codeListKey", "codes");
+            conf.set("codes.allowCodesOtherRanks", List.of(1L,2L));
             conf.save(file);
             throw new RuntimeException("Set valid configuration values");
         }
 
         if (!hasBeenAddedToServer) plugin.getLogger().warning("The bot has not yet been added to your server, add it by following the link: https://discord.com/oauth2/authorize?client_id=1081436720618283058&scope=bot&permissions=8");
+    }
+
+    private <T> T getOrThrow(Class<T> type, String key) {
+        if (conf.get(key) == null) throw new RuntimeException("Configuration file does not have all necessary keys to load. Please delete the configuration and let the program regenerate it.");
+        else return type.cast(conf.get(key));
     }
 
     public String getBotToken() {
@@ -94,5 +101,17 @@ public class Config {
 
     public int getAutoDeleteFailureChannelDays() {
         return autoDeleteFailureDays;
+    }
+
+    public File getCodesFile() {
+        return codesFile;
+    }
+
+    public String getCodeListKey() {
+        return codeListKey;
+    }
+
+    public List<Long> getAllowCodesOtherRanks() {
+        return allowCodesOtherRanks;
     }
 }

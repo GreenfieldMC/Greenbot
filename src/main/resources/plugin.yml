@@ -4,3 +4,7 @@ main: net.greenfieldmc.greenbot.Start
 api-version: 1.19
 authors: [ NJDaeger ]
 description: Greenfield's discord bot
+commands:
+  greenbotreload:
+    description: "Reload Greenbot's configuration"
+    usage: "Usage: /<command>"

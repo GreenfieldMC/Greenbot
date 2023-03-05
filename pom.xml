@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>net.greenfieldmc</groupId>
+    <artifactId>Greenbot</artifactId>
+    <version>1.0.0</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <java.version>17</java.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <!--Compiler plugin-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+
+
+            <!--Shade plugin-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.3.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <relocations>
+                        <relocation>
+                            <pattern>discord4j</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.discord4j</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>jakarta</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.jakarta</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>kotlin</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.kotlin</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>io.netty</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.netty</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.checkerframework</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.checkerframework</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.intellij</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.intellij</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.jetbrains</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.jetbrains</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.objectweb</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.objectweb</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.reactivestreams</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.reactivestreams</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.slf4j</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.slf4j</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.eclipse</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.eclipse</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>javax.servlet</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.javax</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>reactor</pattern>
+                            <shadedPattern>net.greenfieldmc.greenbot.libs.reactor</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.njdaeger.pdk</pattern>
+                            <shadedPattern>>net.greenfieldmc.greenbot.libs.pdk</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
+            </plugin>
+
+        </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.19-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.discord4j</groupId>
+            <artifactId>discord4j-core</artifactId>
+            <version>3.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20230227</version>
+        </dependency><!--        <dependency>-->
+<!--            <groupId>com.njdaeger</groupId>-->
+<!--            <artifactId>PluginDevelopmentKit</artifactId>-->
+<!--            <version>0.0.5</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
+    </dependencies>
+
+</project>

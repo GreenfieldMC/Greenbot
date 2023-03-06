@@ -10,7 +10,6 @@ import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
-import net.greenfieldmc.greenbot.CodesConfig;
 import net.greenfieldmc.greenbot.Config;
 import net.greenfieldmc.greenbot.Util;
 import org.bukkit.Bukkit;
@@ -20,17 +19,15 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CodesCommand extends AbstractCommand {
+public class MapVersionsCommand extends AbstractCommand {
 
     private final Plugin plugin;
     private final Config config;
-    private final CodesConfig codesConfig;
 
-    public CodesCommand(Plugin plugin, Config config, CodesConfig codesConfig) {
-        super("List the current build codes Greenfield follows.", "codes");
+    public MapVersionsCommand(Plugin plugin, Config config) {
+        super("List the current map versions available.", "versions");
         this.plugin = plugin;
         this.config = config;
-        this.codesConfig = codesConfig;
     }
 
     @Override
@@ -41,8 +38,8 @@ public class CodesCommand extends AbstractCommand {
             return Mono.empty();
         }
 
-        if (codesConfig.getCodes().isEmpty()) {
-            return event.reply(invoker.get().getMention()).withEmbeds(Util.warningEmbed("Server Build Codes", "There doesn't seem to be any build codes defined. This might be an error."));
+        if (config.getMapVersions().isEmpty()) {
+            return event.reply(invoker.get().getMention()).withEmbeds(Util.warningEmbed("Map Versions", "There doesn't seem to be any map versions defined. This might be an error."));
         }
 
         var options = event.getInteraction().getCommandInteraction().orElse(null);
@@ -50,11 +47,14 @@ public class CodesCommand extends AbstractCommand {
 
         var runFor = options.getOption("run_for").flatMap(ApplicationCommandInteractionOption::getValue).map(ApplicationCommandInteractionOptionValue::asUser).orElse(null);
 
-        List<EmbedCreateFields.Field> codes = new ArrayList<>();
+        List<EmbedCreateFields.Field> versions = new ArrayList<>();
 
-        for (int i = 0; i < codesConfig.getCodes().size(); i++) {
-            codes.add(EmbedCreateFields.Field.of(" ", "__***" + (i+1) + ".) ***__ * * " + codesConfig.getCodes().get(i), false));
+        for (var version : config.getMapVersions()) {
+            versions.add(EmbedCreateFields.Field.of(" ", "| __***" + version.version() + " ***__ --- " + version.minecraftVersion(), true));
         }
+
+        while (versions.size() % 3 != 0) versions.add(EmbedCreateFields.Field.of(" ", "| ***__\\*\\*\\*\\*__*** --- \\*\\*\\*\\*", true));
+
 
         if (runFor != null) {
             if (invoker.get().getRoleIds().stream().map(Snowflake::asLong).noneMatch(id -> config.getRanksAllowedRunForPermission().contains(id))) return event.reply().withEphemeral(true).withEmbeds(Util.errorEmbed("You do not have permission to run this command for other users."));
@@ -67,19 +67,20 @@ public class CodesCommand extends AbstractCommand {
             channel.createMessage(MessageCreateSpec.builder()
                     .content(user.getMention())
                     .addEmbed(EmbedCreateSpec.builder()
-                        .title("Server Build Codes")
-                        .color(Util.OK)
-                        .fields(codes)
-                        .build()).build()).block();
-            return event.reply().withEphemeral(true).withEmbeds(Util.goodEmbed("Sent Build Codes", "Build codes successfully sent"));
+                            .title("Map Versions")
+                            .color(Util.OK)
+                            .fields(versions)
+                            .footer(config.getMapVersionCommandFooter(), null)
+                            .build()).build()).block();
+            return event.reply().withEphemeral(true).withEmbeds(Util.goodEmbed("Sent Map Versions", "Map versions successfully sent"));
         }
 
-        return event.reply(invoker.get().getMention()).withEmbeds(EmbedCreateSpec.builder()
-                        .title("Server Build Codes")
-                        .color(Util.OK)
-                        .fields(codes)
-                        .build()
-                ).withEphemeral(true);
+        return event.reply().withEmbeds(EmbedCreateSpec.builder()
+                .title("Map Versions")
+                .color(Util.OK)
+                .fields(versions)
+                .footer(config.getMapVersionCommandFooter(), null)
+                .build()).withEphemeral(true);
     }
 
     @Override
@@ -89,7 +90,7 @@ public class CodesCommand extends AbstractCommand {
                 .description(getDescription())
                 .addOption(ApplicationCommandOptionData.builder()
                         .name("run_for")
-                        .description("The discord user who needs to see the build codes.")
+                        .description("The discord user who needs to see the map versions.")
                         .type(ApplicationCommandOption.Type.USER.getValue())
                         .required(false)
                         .build())

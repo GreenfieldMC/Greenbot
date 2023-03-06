@@ -43,7 +43,7 @@ public class FailCommand extends AbstractCommand {
     public Mono<Void> handle(ChatInputInteractionEvent event) {
         var invoker = event.getInteraction().getMember();
         if (invoker.isEmpty()) {
-            Bukkit.getLogger().warning("'fail' was ran by an unknown member");
+            Bukkit.getLogger().warning("'" + getName() + "' was ran by an unknown member");
             return Mono.empty();
         }
 

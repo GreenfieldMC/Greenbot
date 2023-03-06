@@ -7,10 +7,7 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.object.entity.User;
-import net.greenfieldmc.greenbot.commands.CodesCommand;
-import net.greenfieldmc.greenbot.commands.FailCommand;
-import net.greenfieldmc.greenbot.commands.PassCommand;
-import net.greenfieldmc.greenbot.commands.SlashCommand;
+import net.greenfieldmc.greenbot.commands.*;
 import org.bukkit.plugin.Plugin;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -96,13 +93,15 @@ public class Greenbot {
             add(new PassCommand(plugin, config, failures));
             add(new FailCommand(plugin, config, failures));
             add(new CodesCommand(plugin, config, codes));
+            add(new MapVersionsCommand(plugin, config));
+            add(new ResourcePackVersionsCommand(plugin, config));
         }};
     }
 
     void reload() {
         try {
             this.config = new Config(plugin);
-            this.codes = new CodesConfig(plugin, config);
+            this.codes = new CodesConfig(plugin, config);//we dont need to reload failure config because that is written to every time its used
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -38,12 +38,14 @@ public class Config {
         plugin.getDataFolder().mkdirs();
         File file = new File(plugin.getDataFolder() + File.separator + "config.yml");
         boolean hasBeenAddedToServer;
+        long clientId = -1;
         if (file.exists()) {
             this.conf = YamlConfiguration.loadConfiguration(file);
 
             hasBeenAddedToServer = getOrThrow(Boolean.class, "hasBeenAddedToServer");
             conf.set("hasBeenAddedToServer", true);
             this.botToken = getOrThrow(String.class, "botToken");
+            clientId = getOrThrow(Long.class, "clientId");
             this.guildId = getOrThrow(Long.class, "guildId");
             this.ranksAllowedRunForPermission = getOrThrow(List.class, "ranksAllowedRunForPermission");
 
@@ -93,6 +95,7 @@ public class Config {
             var conf = YamlConfiguration.loadConfiguration(file);
             conf.set("hasBeenAddedToServer", true);
             conf.set("botToken", "put bot token here");
+            conf.set("clientId", "put application client id here");
             conf.set("guildId", "put guild id here");
             conf.set("ranksAllowedRunForPermission", List.of(1L,2L));
             conf.set("applications.testingChannelId", "put testing channel id here");
@@ -117,7 +120,7 @@ public class Config {
             throw new RuntimeException("Set valid configuration values");
         }
 
-        if (!hasBeenAddedToServer) plugin.getLogger().warning("The bot has not yet been added to your server, add it by following the link: https://discord.com/oauth2/authorize?client_id=1081436720618283058&scope=bot&permissions=8");
+        if (!hasBeenAddedToServer) plugin.getLogger().warning("The bot has not yet been added to your server, add it by following the link: https://discord.com/oauth2/authorize?client_id=" + clientId +  "&scope=bot&permissions=8");
     }
 
     private <T> T getOrThrow(Class<T> type, String key) {

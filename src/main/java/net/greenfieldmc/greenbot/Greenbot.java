@@ -95,6 +95,9 @@ public class Greenbot {
             add(new CodesCommand(plugin, config, codes));
             add(new MapVersionsCommand(plugin, config));
             add(new ResourcePackVersionsCommand(plugin, config));
+            add(new WindowsInstallCommand(plugin, config));
+            add(new MacInstallCommand(plugin, config));
+            add(new BetaPackCommand(plugin, config));
         }};
     }
 

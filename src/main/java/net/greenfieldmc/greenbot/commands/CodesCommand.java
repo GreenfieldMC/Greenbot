@@ -53,7 +53,7 @@ public class CodesCommand extends AbstractCommand {
         List<EmbedCreateFields.Field> codes = new ArrayList<>();
 
         for (int i = 0; i < codesConfig.getCodes().size(); i++) {
-            codes.add(EmbedCreateFields.Field.of(" ", "__***" + (i+1) + ".) ***__ * * " + codesConfig.getCodes().get(i), false));
+            codes.add(EmbedCreateFields.Field.of(" ", "__***" + (i+1) + ".) ***__ " + codesConfig.getCodes().get(i), false));
         }
 
         if (runFor != null) {

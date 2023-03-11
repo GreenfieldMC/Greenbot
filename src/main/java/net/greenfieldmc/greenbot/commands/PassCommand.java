@@ -84,10 +84,10 @@ public class PassCommand extends AbstractCommand {
                     } else {
                         var member = guild.getMemberById(user.getId()).block();
                         member.addRole(Snowflake.of(config.getTestingRankId())).block();
-                        Bukkit.getOfflinePlayer(uuid).setWhitelisted(true);
+                        Bukkit.getScheduler().runTask(plugin, (t) -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "whitelist add " + ign));
                         testerChannel.getRestChannel().createMessage(MessageCreateSpec.builder()
                                 .content(user.getMention())
-                                .addEmbed(Util.warningEmbed(
+                                .addEmbed(Util.goodEmbed(
                                         "Your application has been approved!",
                                         "You should be whitelisted! Please follow the next steps in the pinned messages!"))
                                 .build().asRequest()).block();

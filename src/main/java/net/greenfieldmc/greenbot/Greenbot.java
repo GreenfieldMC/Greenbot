@@ -45,7 +45,14 @@ public class Greenbot {
                 final User user = event.getSelf();
                 plugin.getLogger().info("Logged in as " + user.getUsername() + "#" + user.getDiscriminator());
             }
-        )).subscribe();
+        )).doOnComplete(() -> {
+            failures.getFailures().forEach((uid, failure) -> {
+                if (failure.creationTime() + (1000L * 60 * 60 * 24 * config.getAutoDeleteFailureChannelDays()) < System.currentTimeMillis()) {
+                    failures.removeFailureChannelForUser(uid);
+                    restClient.getChannelService().deleteChannel(failure.channelId(), "Removing failure channel").block();
+                }
+            });
+        }).subscribe();
 
         client.on(DisconnectEvent.class, event ->
                 Mono.fromRunnable(() -> {
@@ -58,7 +65,7 @@ public class Greenbot {
         client.on(TextChannelDeleteEvent.class, event -> Mono.fromRunnable(() -> {
             var channel = event.getChannel();
             var uid = failures.findDiscordIdByChannel(channel.getId().asLong());
-            if (uid != -1) failures.removeFailureChannel(uid);
+            if (uid != -1) failures.removeFailureChannelForUser(uid);
         })).subscribe();
 
         var id = restClient.getApplicationId().block();
@@ -80,12 +87,6 @@ public class Greenbot {
                         return cmd.handle(event);
                     })
         ).doOnError(e -> plugin.getLogger().severe(e.getMessage())).then(client.onDisconnect()).subscribe();
-
-        failures.getFailures().forEach((uid, failure) -> {
-            if (failure.creationTime() + (1000L * 60 * 60 * 24 * config.getAutoDeleteFailureChannelDays()) > System.currentTimeMillis()) {
-                failures.removeFailureChannel(uid);
-            }
-        });
     }
 
     private void initCommands() {
@@ -98,6 +99,7 @@ public class Greenbot {
             add(new WindowsInstallCommand(plugin, config));
             add(new MacInstallCommand(plugin, config));
             add(new BetaPackCommand(plugin, config));
+            add(new ArchiveCommand(plugin, config));
         }};
     }
 

@@ -1,12 +1,12 @@
 package net.greenfieldmc.greenbot;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class FailureConfig {
@@ -61,7 +61,8 @@ public class FailureConfig {
         save();
     }
 
-    public void removeFailureChannel(long discordId) {
+    public void removeFailureChannelForUser(long discordId) {
+        Bukkit.getLogger().info("Deleted failure channel for user: " + discordId);
         conf.set("failures." + discordId, null);
         failureMap.remove(discordId);
         save();

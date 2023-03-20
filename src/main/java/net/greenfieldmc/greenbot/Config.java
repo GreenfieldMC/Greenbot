@@ -34,6 +34,8 @@ public class Config {
     private final String macInstallLink;
     private final String windowsInstallLink;
 
+    private final long archiveCategoryId;
+
     public Config(Plugin plugin) throws IOException {
         plugin.getDataFolder().mkdirs();
         File file = new File(plugin.getDataFolder() + File.separator + "config.yml");
@@ -86,6 +88,8 @@ public class Config {
             this.windowsInstallLink = getOrThrow(String.class, "windowsInstall.link");
             this.macInstallLink = getOrThrow(String.class, "macInstall.link");
 
+            this.archiveCategoryId = getOrThrow(Long.class, "archive.archiveCategoryId");
+
             conf.save(file);
         } else {
             plugin.getLogger().warning("No configuration file found for the bot. Creating a default configuration.");
@@ -116,6 +120,7 @@ public class Config {
             conf.set("betaPack.gitUpdateSteps", List.of("First step", "second step"));
             conf.set("macInstall.link", "video link");
             conf.set("windowsInstall.link", "video link");
+            conf.set("archive.archiveCategoryId", "archive category ID here");
             conf.save(file);
             throw new RuntimeException("Set valid configuration values");
         }
@@ -202,6 +207,10 @@ public class Config {
 
     public String getWindowsInstallLink() {
         return windowsInstallLink;
+    }
+
+    public long getArchiveCategoryId() {
+        return archiveCategoryId;
     }
 
     public record MapVersion(String version, String minecraftVersion) {}
